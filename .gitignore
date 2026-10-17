@@ -17,6 +17,9 @@ htmlcov/
 CLAUDE.md
 .claude/
 
+# Copyrighted reference material (local use only, never publish)
+references/
+
 # OS / editor
 .DS_Store
 Thumbs.db
