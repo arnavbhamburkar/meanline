@@ -9,7 +9,9 @@ range (Mach number, solidity, camber, etc.), and warn at runtime outside it.
 
 References
 ----------
-TODO(source): diffusion-factor definition (Dixon & Hall / Cumpsty, equation).
+Dixon & Hall, diffusion factor (Lieblein): Chapter 3, Eq. (3.32) for a cascade,
+Eq. (3.33) for constant axial velocity and incompressible flow, and Chapter 5,
+Eq. (5.18) for a compressor rotor. Cascade geometry: Section 3.2.
 """
 
 from dataclasses import dataclass
@@ -97,7 +99,8 @@ def calculate_pitch(r_mean, N_blades):
     r_mean = mean radius [m]
     N_blades = number of blades (integer)
 
-    TODO(source): Dixon & Hall, pitch (chapter and equation).
+    TODO(source): Dixon & Hall define the space (pitch) s in Section 3.2 but give
+    no numbered equation for s = 2 * pi * r / N; it is a geometric identity.
     """
     if N_blades <= 0:
         raise ValueError(f"Number of blades must be positive, got N_blades={N_blades}")
@@ -114,7 +117,8 @@ def calculate_solidity(chord, pitch):
     chord = blade chord [m]
     pitch = spacing between blades [m]
 
-    TODO(source): Dixon & Hall, solidity (chapter and equation).
+    Source: Dixon & Hall, Section 3.2 (cascade geometry): space-chord ratio s/l
+    and solidity sigma = l/s, defined in the text (no numbered equation).
     """
     if pitch <= 0:
         raise ValueError(f"Pitch must be positive, got pitch={pitch} m")
@@ -131,7 +135,8 @@ def camber_angle(alpha_1_dash, alpha_2_dash):
     alpha_1_dash = blade inlet angle at the cascade leading edge [rad]
     alpha_2_dash = blade outlet angle at the cascade trailing edge [rad]
 
-    TODO(source): Dixon & Hall, camber angle (chapter and equation).
+    Source: Dixon & Hall, Section 3.2 (cascade geometry): camber angle
+    theta = alpha_1' - alpha_2', defined in the text (no numbered equation).
     """
     return alpha_1_dash - alpha_2_dash
 
@@ -139,7 +144,9 @@ def camber_angle(alpha_1_dash, alpha_2_dash):
 def de_haller_number(v_in, v_out):
     """De Haller number: ratio of exit to inlet velocity magnitude.
 
-    TODO(source): Dixon & Hall, de Haller number (chapter and equation).
+    Source: Dixon & Hall, Chapter 5, Section 5.7 ("Stage Loading"): de Haller
+    (1953) proposed w2/w1 >= 0.75 for satisfactory performance. This is stated
+    in the text; there is no numbered equation.
     """
     if v_in == 0:
         raise ValueError(f"Velocity must be non-zero, got v_in={v_in} m/s")
@@ -184,7 +191,8 @@ def turning_angle(alpha_in, alpha_out):
     alpha_out = outlet flow angle [rad]
     Both parameters depend on flow conditions (not a property of the cascade)
 
-    TODO(source): Dixon & Hall, turning angle (chapter and equation).
+    Source: Dixon & Hall, Section 3.2 (cascade geometry): deflection
+    epsilon = alpha_1 - alpha_2, defined in the text (no numbered equation).
     """
     return alpha_in - alpha_out
 

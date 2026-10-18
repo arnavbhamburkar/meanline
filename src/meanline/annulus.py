@@ -57,12 +57,22 @@ class Annulus:
 
     @property
     def r_mean(self) -> float:
-        """Mean radius [m]."""
+        """Mean radius [m].
+
+        Source: Dixon & Hall, Chapter 4, text after Eq. (4.24): the arithmetic
+        mean r_m = (r_t + r_h) / 2 is an approximation. The precise (equal-area)
+        mean radius is r_m^2 = (r_t^2 + r_h^2) / 2; the two agree for high
+        hub-to-tip ratios.
+        """
         return (self.r_hub + self.r_tip) * 0.5
 
     @property
     def A_flow(self) -> float:
-        """Geometric flow area [m^2]."""
+        """Geometric flow area [m^2].
+
+        Source: Dixon & Hall, Chapter 4, Eq. (4.25),
+        A = pi * r_t^2 * [1 - (r_h / r_t)^2].
+        """
         return math.pi * (self.r_tip**2 - self.r_hub**2)
 
     @property
@@ -77,7 +87,8 @@ def mass_flow_rate(rho, annulus, v_x):
     v_x is the axial velocity component, assumed uniform across the annulus.
     Units: rho [kg/m^3], A_eff [m^2], v_x [m/s], result [kg/s].
 
-    TODO(source): Dixon & Hall, mass flow rate (chapter, equation).
+    Source: Dixon & Hall, Chapter 1, Eq. (1.8), m_dot = rho * c * A_n, with
+    c = v_x and A_n = A_eff. The book has no equation for the blockage factor.
     """
     if rho <= 0:
         raise ValueError(f"Density must be positive, got rho={rho} kg/m^3")
@@ -93,7 +104,8 @@ def axial_velocity_from_mass_flow_rate(m_dot, rho, annulus):
 
     Units: m_dot [kg/s], rho [kg/m^3], A_eff [m^2], result [m/s].
 
-    TODO(source): Dixon & Hall, axial velocity (chapter, equation).
+    Source: Dixon & Hall, Chapter 1, Eq. (1.8), rearranged for the velocity
+    (see also Chapter 4, Eq. 4.24, for the annulus-area form).
     """
     if rho <= 0:
         raise ValueError(f"Density must be positive, got rho={rho} kg/m^3")

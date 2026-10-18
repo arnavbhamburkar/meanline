@@ -11,7 +11,10 @@ Model level: mean-line, one radius. SI units.
 
 References
 ----------
-TODO(source): Dixon & Hall, total/static relations (chapter and equation).
+Dixon & Hall, Chapter 1: stagnation enthalpy, Eq. (1.12); stagnation state as
+the state reached isentropically, Section 1.9 (text before Eq. 1.34) with
+Eq. (1.28). The perfect-gas relations, Eqs. (1.33b) and (1.35), are used only
+as cross-checks.
 """
 
 from dataclasses import dataclass
@@ -105,7 +108,7 @@ def h0_from_h(state, c) -> float:
 
     The input state is the static state
 
-    TODO(source): Dixon & Hall, stagnation enthalpy (chapter, equation).
+    Source: Dixon & Hall, Chapter 1, Eq. (1.12).
     """
     if c < 0:
         raise ValueError(f"Velocity must be non-negative, got c={c} m/s")
@@ -122,7 +125,7 @@ def h_from_h0(state, c) -> float:
 
     The input state is the total state
 
-    TODO(source): Dixon & Hall, static enthalpy (chapter, equation).
+    Source: Dixon & Hall, Chapter 1, Eq. (1.12), rearranged.
     """
     if c < 0:
         raise ValueError(f"Velocity must be non-negative, got c={c} m/s")
@@ -141,7 +144,9 @@ def total_from_static(state, c) -> ThermoState:
     Entropy remains constant, as the conversion of static to total state is
     isentropic.
 
-    TODO(source): Dixon & Hall, total state (chapter, equation).
+    Source: Dixon & Hall, Chapter 1, Eq. (1.12) for h0; isentropic stagnation
+    state per Section 1.9 and Eq. (1.28). The book's closed forms, Eqs. (1.33b)
+    and (1.35), hold for a perfect gas only; this function is real-gas.
     """
     h0 = h0_from_h(state, c)
     return ThermoState.state_from_hs(state.fluid, h0, state.s)
@@ -157,7 +162,9 @@ def static_from_total(state, c) -> ThermoState:
     Entropy remains constant, as the conversion of total to static state is
     isentropic.
 
-    TODO(source): Dixon & Hall, static state (chapter, equation).
+    Source: Dixon & Hall, Chapter 1, Eq. (1.12), rearranged; isentropic
+    stagnation state per Section 1.9 and Eq. (1.28). The perfect-gas closed
+    forms, Eqs. (1.33b) and (1.35), do not apply to this real-gas function.
     """
     h = h_from_h0(state, c)
     return ThermoState.state_from_hs(state.fluid, h, state.s)

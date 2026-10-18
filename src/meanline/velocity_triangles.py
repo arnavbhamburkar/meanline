@@ -9,8 +9,9 @@ Model level: mean-line, one radius. SI units.
 
 References
 ----------
-TODO(source): Dixon & Hall, velocity triangles and stage parameters
-(chapter and equation numbers).
+Dixon & Hall, velocity triangles: Chapter 1, Eqs. (1.2)-(1.6) and Chapter 5,
+Section 5.3 (Figure 5.2); Euler work: Eqs. (1.18)-(1.19) and (5.1); stage
+parameters: Eq. (2.11) and Eqs. (5.17)-(5.21).
 """
 
 from math import cos, sin
@@ -61,7 +62,8 @@ def axial_component(c, theta):
 
     Units: c [m/s], theta [rad] measured from the axial direction.
 
-    TODO(source): Dixon & Hall, velocity triangle (chapter, equation).
+    Source: Dixon & Hall, Chapter 1, Eqs. (1.2) and (1.3) (c_m = c_x for axial
+    machines; angles measured from the meridional/axial direction).
     """
     c_x = c * cos(theta)
     return c_x
@@ -72,7 +74,8 @@ def tangential_component(c, theta):
 
     Units: c [m/s], theta [rad] measured from the axial direction.
 
-    TODO(source): Dixon & Hall, velocity triangle (chapter, equation).
+    Source: Dixon & Hall, Chapter 1, Eqs. (1.2) and (1.3) (angles measured from
+    the meridional/axial direction).
     """
     c_theta = c * sin(theta)
     return c_theta
@@ -84,7 +87,9 @@ def blade_speed_from_triangle(w_theta, c_theta):
     Convention: c_theta is positive in the direction of blade motion and
     w_theta is positive opposite to it. Units: [m/s].
 
-    TODO(source): Dixon & Hall, velocity triangle (chapter, equation).
+    Source: Dixon & Hall, Chapter 1, Eq. (1.4), w_theta = c_theta - U. The sign
+    of w_theta here follows the Chapter 5 convention (Section 5.3, Figure 5.2),
+    c_theta = U - w_theta, as used before Eq. (5.17b).
     """
     u = w_theta + c_theta
     return u
@@ -95,7 +100,8 @@ def flow_coefficient(c_x, u):
 
     Units: c_x [m/s], u [m/s], result [-].
 
-    TODO(source): Dixon & Hall, flow coefficient (chapter, equation).
+    Source: Dixon & Hall, Section 5.7 (phi = c_x / U, stated in the text after
+    Eq. 5.17c) and Section 2.4 (Phi = c_m / U). Neither has a numbered equation.
     """
     phi = c_x / u
     return phi
@@ -106,7 +112,8 @@ def stage_loading_coefficient(work, u):
 
     Units: work [J/kg], u [m/s], result [-].
 
-    TODO(source): Dixon & Hall, stage loading coefficient (chapter, equation).
+    Source: Dixon & Hall, Chapter 2, Eq. (2.11), psi = delta h0 / U^2; the
+    compressor form is Eq. (5.17a).
     """
     psi = work / (u**2)
     return psi
