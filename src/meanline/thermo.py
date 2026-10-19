@@ -1,6 +1,6 @@
 """Thermodynamic state handling via CoolProp.
 
-Planned scope:
+Scope:
     - Static and total (stagnation) state representation.
     - Static <-> total conversions for a given velocity.
     - Real-gas properties from CoolProp; no hard-coded ideal-gas constants

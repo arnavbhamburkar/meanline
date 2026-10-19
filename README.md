@@ -10,21 +10,21 @@ See [docs/PROJECT_PLAN.md](docs/PROJECT_PLAN.md) for the plan and validation str
 
 ## Status
 
-The foundation modules are implemented and unit-tested: thermodynamic state handling,
-velocity triangles, Euler work, stage parameters, diffusion factor and de Haller
-number. Blade-row geometry is in progress: annulus geometry with blockage, cascade geometry
-(pitch, solidity, camber) and the incidence, deviation and turning definitions are
-done. The deviation correlation (Howell's rule) and the blade-row model are still
-to do. **Nothing is validated against published data yet**; the unit tests are
-hand calculations and consistency checks. Validation against literature will live
-in `tests/validation/`.
+Under development. Implemented and unit-tested so far: thermodynamic state
+handling, velocity triangles, Euler work, stage parameters, diffusion factor and
+de Haller number, annulus geometry with blockage, cascade geometry (pitch,
+solidity, camber), the incidence, deviation and turning definitions, and Howell's
+nominal deviation rule. The blade-row model, loss models, multi-stage stacking and
+off-design performance are still to do. **Nothing is validated against published
+data yet**; the unit tests are hand calculations and consistency checks.
+Validation against literature will live in `tests/validation/`.
 
 | Module | Contents |
 |---|---|
 | `meanline.thermo` | `ThermoState` (CoolProp real-gas state), static <-> total conversions for a given velocity |
 | `meanline.velocity_triangles` | Velocity components, triangle closure, Euler work, flow coefficient, stage loading coefficient, degree of reaction |
 | `meanline.annulus` | `Annulus` (hub, tip, blockage; derived mean radius, flow and effective area), mass flow and axial velocity from continuity |
-| `meanline.cascade` | `Cascade` geometry (pitch, solidity, camber), incidence, deviation and turning angles, diffusion factor, de Haller number |
+| `meanline.cascade` | `Cascade` geometry (pitch, solidity, camber), incidence, deviation and turning angles, Howell nominal deviation, diffusion factor, de Haller number |
 
 ## Model level and assumptions
 

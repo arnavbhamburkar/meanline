@@ -1,6 +1,6 @@
 """Annulus geometry.
 
-Planned scope:
+Scope:
     - Hub, tip and mean radius.
     - Blockage and effective flow area.
     - Constant-radius design rules.

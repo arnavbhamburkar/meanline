@@ -1,6 +1,6 @@
 """Velocity triangles and stage parameters.
 
-Planned scope:
+Scope:
     - Absolute and relative frames at the mean radius.
     - Euler work equation.
     - Flow coefficient, loading coefficient, degree of reaction.
