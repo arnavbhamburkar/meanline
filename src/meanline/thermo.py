@@ -53,7 +53,7 @@ class ThermoState:
     rho: float  # kg/m^3
     a: float  # m/s
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate that pressure and temperature are positive."""
         if self.p <= 0:
             raise ValueError(f"Pressure must be positive, got p={self.p} Pa")
@@ -100,7 +100,7 @@ class ThermoState:
         )
 
 
-def h0_from_h(state, c) -> float:
+def h0_from_h(state: ThermoState, c: float) -> float:
     """Total enthalpy from static enthalpy and velocity: h0 = h + c**2 / 2.
 
     Exact for any fluid (real gas included). Units: h [J/kg], c [m/s],
@@ -117,7 +117,7 @@ def h0_from_h(state, c) -> float:
     return h0
 
 
-def h_from_h0(state, c) -> float:
+def h_from_h0(state: ThermoState, c: float) -> float:
     """Return static enthalpy from total enthalpy and velocity: h = h0 - c**2 / 2.
 
     Exact for any fluid (real gas included). Units: h0 [J/kg], c [m/s],
@@ -134,7 +134,7 @@ def h_from_h0(state, c) -> float:
     return h
 
 
-def total_from_static(state, c) -> ThermoState:
+def total_from_static(state: ThermoState, c: float) -> ThermoState:
     """Total state from static state and velocity.
 
     Exact for any fluid (real gas included). Units: c [m/s].
@@ -152,7 +152,7 @@ def total_from_static(state, c) -> ThermoState:
     return ThermoState.state_from_hs(state.fluid, h0, state.s)
 
 
-def static_from_total(state, c) -> ThermoState:
+def static_from_total(state: ThermoState, c: float) -> ThermoState:
     """Return the static state from the total state and velocity.
 
     Exact for any fluid (real gas included). Units: c [m/s].

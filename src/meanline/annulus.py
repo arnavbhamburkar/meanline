@@ -38,7 +38,7 @@ class Annulus:
     r_tip: float  # m
     blockage: float  # dimensionless
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate the input parameters.
 
         Raise ValueError if any parameter is invalid.
@@ -81,7 +81,7 @@ class Annulus:
         return self.A_flow * (1.0 - self.blockage)
 
 
-def mass_flow_rate(rho, annulus, v_x):
+def mass_flow_rate(rho: float, annulus: Annulus, v_x: float) -> float:
     """Mass flow rate through an annulus: m_dot = rho * A_eff * v_x.
 
     v_x is the axial velocity component, assumed uniform across the annulus.
@@ -99,7 +99,9 @@ def mass_flow_rate(rho, annulus, v_x):
     return m_dot
 
 
-def axial_velocity_from_mass_flow_rate(m_dot, rho, annulus):
+def axial_velocity_from_mass_flow_rate(
+    m_dot: float, rho: float, annulus: Annulus
+) -> float:
     """Axial velocity from mass flow rate: v_x = m_dot / (rho * A_eff).
 
     Units: m_dot [kg/s], rho [kg/m^3], A_eff [m^2], result [m/s].

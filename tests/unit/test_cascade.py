@@ -11,6 +11,7 @@ from meanline.cascade import (
     de_haller_number,
     deviation_angle,
     diffusion_factor,
+    howell_deviation,
     incidence_angle,
     turning_angle,
 )
@@ -299,3 +300,159 @@ def test_cascade_built_on_annulus_mean_radius():
     ann = Annulus(0.2, 0.3, 0.0)
     c = Cascade.from_geometry(50, 0.04, ann.r_mean, 0.8, 0.3)
     assert c.pitch == pytest.approx(2.0 * math.pi * ann.r_mean / 50)
+
+
+# --- Howell nominal deviation ----------------------------------------------
+# Dixon & Hall, Eqs. (3.43) and (3.44):
+#   delta* = m * theta * (s/l)^n,   m = 0.23 * (2a/l)^2 + alpha_2* / 500
+# with alpha_2* = alpha_2' + delta* in degrees. Reference values: Example 3.2
+# (Section 3.5) and Example 5.3 (Section 5.7).
+
+
+def _make_cascade(space_chord, theta_deg, alpha_2_dash_deg, n_blades=50, chord=1.0):
+    """Build a Cascade with a prescribed s/l, camber and blade exit angle."""
+    r_mean = space_chord * chord * n_blades / (2.0 * math.pi)
+    a2 = math.radians(alpha_2_dash_deg)
+    a1 = a2 + math.radians(theta_deg)
+    return Cascade.from_geometry(n_blades, chord, r_mean, a1, a2)
+
+
+def _howell_reference_deg(space_chord, theta_deg, a_over_l, alpha_2_dash_deg, n):
+    """Independent fixed-point solution of Eqs. (3.43) and (3.44), in degrees."""
+    delta = 0.0
+    for _ in range(200):
+        m = 0.23 * (2.0 * a_over_l) ** 2 + (alpha_2_dash_deg + delta) / 500.0
+        delta = m * theta_deg * space_chord**n
+    return delta
+
+
+def _howell_deg(cascade, a_over_l, n):
+    return math.degrees(howell_deviation(cascade, a_over_l * cascade.chord, n))
+
+
+def test_howell_example_5_3_delta_star():
+    # theta = 45 deg, s/l = 0.9, circular arc (a/l = 0.5), alpha_2' = -0.5 deg.
+    # Book: delta* = 10.69 deg.
+    c = _make_cascade(0.9, 45.0, -0.5)
+    assert _howell_deg(c, 0.5, 0.5) == pytest.approx(10.69, abs=0.01)
+
+
+def test_howell_example_5_3_nominal_exit_angle():
+    # Book: beta_2* = alpha_2' + delta* = 10.2 deg.
+    c = _make_cascade(0.9, 45.0, -0.5)
+    exit_angle = math.degrees(c.alpha_2_dash) + _howell_deg(c, 0.5, 0.5)
+    assert exit_angle == pytest.approx(10.2, abs=0.05)
+
+
+def test_howell_example_3_2_delta_star():
+    # theta = 30 deg, s/l = 1, a/l = 0.5, alpha_2' = 20 deg. The book stops its
+    # iteration after two steps at 8.6 deg; the converged value is 8.617 deg.
+    c = _make_cascade(1.0, 30.0, 20.0)
+    assert _howell_deg(c, 0.5, 0.5) == pytest.approx(8.6, abs=0.1)
+    assert _howell_deg(c, 0.5, 0.5) == pytest.approx(8.617, abs=0.001)
+
+
+def test_howell_hand_calculation_closed_form():
+    # k = 30 deg * 1 = 30; delta = 30 * (0.23 + 20/500) / (1 - 30/500)
+    #   = 30 * 0.27 / 0.94 = 8.617 deg.
+    c = _make_cascade(1.0, 30.0, 20.0)
+    assert _howell_deg(c, 0.5, 0.5) == pytest.approx(30.0 * 0.27 / 0.94)
+
+
+@pytest.mark.parametrize("a_over_l", [0.3, 0.4, 0.5, 0.6])
+def test_howell_matches_independent_fixed_point_solution(a_over_l):
+    # a/l != 0.5 is needed to expose a missing square on (2a/l).
+    c = _make_cascade(0.8, 35.0, 10.0)
+    expected = _howell_reference_deg(0.8, 35.0, a_over_l, 10.0, 0.5)
+    assert _howell_deg(c, a_over_l, 0.5) == pytest.approx(expected)
+
+
+@pytest.mark.parametrize("space_chord", [0.6, 0.9, 1.0, 1.3])
+def test_howell_matches_reference_for_different_space_chord_ratios(space_chord):
+    # s/l != 1 is needed to expose pitch being used in place of chord.
+    c = _make_cascade(space_chord, 40.0, 5.0)
+    expected = _howell_reference_deg(space_chord, 40.0, 0.5, 5.0, 0.5)
+    assert _howell_deg(c, 0.5, 0.5) == pytest.approx(expected)
+
+
+def test_howell_does_not_depend_on_absolute_size():
+    # Only the ratios a/l and s/l enter, not the chord in metres.
+    small = _make_cascade(0.9, 45.0, -0.5, chord=0.02)
+    large = _make_cascade(0.9, 45.0, -0.5, chord=2.0)
+    assert _howell_deg(small, 0.5, 0.5) == pytest.approx(_howell_deg(large, 0.5, 0.5))
+
+
+def test_howell_result_satisfies_both_book_equations():
+    # Plug delta* back into Eqs. (3.43) and (3.44): both sides must agree.
+    c = _make_cascade(0.85, 38.0, 12.0)
+    delta = _howell_deg(c, 0.45, 0.5)
+    m = 0.23 * (2.0 * 0.45) ** 2 + (12.0 + delta) / 500.0
+    assert delta == pytest.approx(m * 38.0 * 0.85**0.5)
+
+
+def test_howell_deviation_is_in_radians():
+    c = _make_cascade(1.0, 30.0, 20.0)
+    value = howell_deviation(c, 0.5 * c.chord, 0.5)
+    assert value == pytest.approx(math.radians(30.0 * 0.27 / 0.94))
+
+
+def test_howell_is_zero_for_uncambered_blade():
+    c = _make_cascade(0.9, 0.0, 15.0)
+    assert howell_deviation(c, 0.5 * c.chord, 0.5) == pytest.approx(0.0)
+
+
+def test_howell_increases_with_camber():
+    low = _howell_deg(_make_cascade(0.9, 25.0, 10.0), 0.5, 0.5)
+    high = _howell_deg(_make_cascade(0.9, 40.0, 10.0), 0.5, 0.5)
+    assert high > low > 0.0
+
+
+def test_howell_increases_with_space_chord_ratio():
+    # Book: deviation increases with pitch-chord ratio and with camber.
+    dense = _howell_deg(_make_cascade(0.7, 35.0, 10.0), 0.5, 0.5)
+    sparse = _howell_deg(_make_cascade(1.2, 35.0, 10.0), 0.5, 0.5)
+    assert sparse > dense
+
+
+def test_howell_increases_with_aft_camber_position():
+    # Larger a/l raises m through the (2a/l)^2 term.
+    forward = _howell_deg(_make_cascade(0.9, 35.0, 10.0), 0.3, 0.5)
+    aft = _howell_deg(_make_cascade(0.9, 35.0, 10.0), 0.6, 0.5)
+    assert aft > forward
+
+
+def test_howell_exponent_choice_is_irrelevant_at_unit_space_chord_ratio():
+    # (s/l)^n = 1 for any n when s/l = 1.
+    c = _make_cascade(1.0, 30.0, 20.0)
+    assert _howell_deg(c, 0.5, 0.5) == pytest.approx(_howell_deg(c, 0.5, 1.0))
+
+
+def test_howell_inlet_guide_vane_exponent_n_equals_one():
+    # n = 1: (s/l)^1 < (s/l)^0.5 for s/l < 1, so the deviation is smaller.
+    c = _make_cascade(0.8, 30.0, 10.0)
+    expected = _howell_reference_deg(0.8, 30.0, 0.5, 10.0, 1.0)
+    assert _howell_deg(c, 0.5, 1.0) == pytest.approx(expected)
+    assert _howell_deg(c, 0.5, 1.0) < _howell_deg(c, 0.5, 0.5)
+
+
+@pytest.mark.parametrize("a_over_l", [-0.1, 1.5])
+def test_howell_rejects_camber_position_outside_the_chord(a_over_l):
+    c = _make_cascade(0.9, 35.0, 10.0)
+    with pytest.raises(ValueError, match="maximum camber"):
+        howell_deviation(c, a_over_l * c.chord, 0.5)
+
+
+@pytest.mark.parametrize("n", [0.0, 0.3, 0.75, 2.0, -0.5])
+def test_howell_rejects_exponent_other_than_half_or_one(n):
+    c = _make_cascade(0.9, 35.0, 10.0)
+    with pytest.raises(ValueError, match="n must be"):
+        howell_deviation(c, 0.5 * c.chord, n)
+
+
+@pytest.mark.parametrize("theta_deg", [500.0, 600.0])
+def test_howell_rejects_zero_or_negative_denominator(theta_deg):
+    # 1 - k*c <= 0 when theta * (s/l)^n >= 500 deg, far outside real blading.
+    # At s/l = 1 and theta = 500 deg the denominator is exactly zero.
+    c = _make_cascade(1.0, theta_deg, 0.0)
+    with pytest.raises(ValueError, match="Denominator"):
+        howell_deviation(c, 0.5 * c.chord, 0.5)

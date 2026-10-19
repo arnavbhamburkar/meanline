@@ -15,6 +15,7 @@ Eq. (5.18) for a compressor rotor. Cascade geometry: Section 3.2.
 """
 
 from dataclasses import dataclass
+from math import pi
 
 
 @dataclass(frozen=True)
@@ -93,7 +94,7 @@ class Cascade:
         )
 
 
-def calculate_pitch(r_mean, N_blades):
+def calculate_pitch(r_mean: float, N_blades: int) -> float:
     """Calculate the pitch (spacing) between blades at the mean radius.
 
     r_mean = mean radius [m]
@@ -109,7 +110,7 @@ def calculate_pitch(r_mean, N_blades):
     return pitch
 
 
-def calculate_solidity(chord, pitch):
+def calculate_solidity(chord: float, pitch: float) -> float:
     """Calculate the solidity of a blade row.
 
     Solidity = chord / pitch
@@ -127,7 +128,7 @@ def calculate_solidity(chord, pitch):
     return solidity
 
 
-def camber_angle(alpha_1_dash, alpha_2_dash):
+def camber_angle(alpha_1_dash: float, alpha_2_dash: float) -> float:
     """Calculate the camber angle of a blade row.
 
     Camber angle = alpha_1_dash - alpha_2_dash
@@ -141,7 +142,7 @@ def camber_angle(alpha_1_dash, alpha_2_dash):
     return alpha_1_dash - alpha_2_dash
 
 
-def de_haller_number(v_in, v_out):
+def de_haller_number(v_in: float, v_out: float) -> float:
     """De Haller number: ratio of exit to inlet velocity magnitude.
 
     Source: Dixon & Hall, Chapter 5, Section 5.7 ("Stage Loading"): de Haller
@@ -154,7 +155,14 @@ def de_haller_number(v_in, v_out):
     return v_out / v_in
 
 
-def diffusion_factor(w_in, w_out, c_theta_in, c_theta_out, spacing, chord):
+def diffusion_factor(
+    w_in: float,
+    w_out: float,
+    c_theta_in: float,
+    c_theta_out: float,
+    spacing: float,
+    chord: float,
+) -> float:
     """Diffusion factor of a blade row.
 
     D = 1 - (w_out / w_in)
@@ -182,7 +190,7 @@ def diffusion_factor(w_in, w_out, c_theta_in, c_theta_out, spacing, chord):
     return df
 
 
-def turning_angle(alpha_in, alpha_out):
+def turning_angle(alpha_in: float, alpha_out: float) -> float:
     """Calculate the turning angle of a blade row.
 
     Turning angle = alpha_in - alpha_out
@@ -197,7 +205,7 @@ def turning_angle(alpha_in, alpha_out):
     return alpha_in - alpha_out
 
 
-def incidence_angle(alpha_in, alpha_1_dash):
+def incidence_angle(alpha_in: float, alpha_1_dash: float) -> float:
     """Calculate the incidence angle of a blade row.
 
     Incidence angle = alpha_in - alpha_1_dash
@@ -211,7 +219,7 @@ def incidence_angle(alpha_in, alpha_1_dash):
     return alpha_in - alpha_1_dash
 
 
-def deviation_angle(alpha_2_dash, alpha_out):
+def deviation_angle(alpha_2_dash: float, alpha_out: float) -> float:
     """Calculate the deviation angle of a blade row.
 
     Deviation angle = alpha_out - alpha_2_dash
@@ -223,3 +231,41 @@ def deviation_angle(alpha_2_dash, alpha_out):
     TODO(source): Dixon & Hall, deviation angle (chapter 3 and equation 3.2).
     """
     return alpha_out - alpha_2_dash
+
+
+def howell_deviation(cascade: Cascade, a: float, n: float) -> float:
+    """Howell deviation correlation for a cascade.
+
+    Prediction of deviation angle based on cascade geometry and flow conditions
+    Nominal incidence only, low speed cascade data. Returns the deviation angle
+    in radians.
+
+    TODO(source): Dixon & Hall, fluid deviation (chapter 3 and equations 3.43
+    and 3.44).
+
+    a = distance from the leading edge to the point of maximum camber [m]
+    n = 0.5 for compressor cascade, 1 for inlet guide vane
+    """
+    if a / cascade.chord < 0 or a / cascade.chord > 1:
+        raise ValueError(
+            "Distance of maximum camber from leading edge must not be greater "
+            f"than the chord, got a={a} m"
+        )
+    if n != 0.5 and n != 1:
+        raise ValueError(
+            "n must be either 0.5 (compressor cascade) or 1 (inlet guide vane), "
+            f"got n={n}"
+        )
+
+    k = cascade.camber * (1 / cascade.solidity) ** n
+    m_0 = 0.23 * (2 * a / cascade.chord) ** 2
+    c = 180 / (500 * pi)
+
+    if 1 - k * c <= 0:
+        raise ValueError(
+            "Denominator in Howell deviation correlation is zero or negative,"
+            f"got k={k} and c={c}"
+        )
+
+    delta_star = k * (m_0 + c * cascade.alpha_2_dash) / (1 - k * c)
+    return delta_star

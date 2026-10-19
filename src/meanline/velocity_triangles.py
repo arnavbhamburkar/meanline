@@ -43,7 +43,7 @@ from math import cos, sin
 # w_theta_2 = w_2 * sin(beta_2)
 
 
-def euler_work(u_1, u_2, c_theta_1, c_theta_2):
+def euler_work(u_1: float, u_2: float, c_theta_1: float, c_theta_2: float) -> float:
     """Euler work equation: specific work, dh0 = U2*c_theta2 - U1*c_theta1.
 
     For axial machines, U1 = U2 = U, so dh0 = U*(c_theta2 - c_theta1).
@@ -57,7 +57,7 @@ def euler_work(u_1, u_2, c_theta_1, c_theta_2):
     return work
 
 
-def axial_component(c, theta):
+def axial_component(c: float, theta: float) -> float:
     """Axial component of a velocity: c_x = c * cos(theta).
 
     Units: c [m/s], theta [rad] measured from the axial direction.
@@ -69,7 +69,7 @@ def axial_component(c, theta):
     return c_x
 
 
-def tangential_component(c, theta):
+def tangential_component(c: float, theta: float) -> float:
     """Tangential component of a velocity: c_theta = c * sin(theta).
 
     Units: c [m/s], theta [rad] measured from the axial direction.
@@ -81,7 +81,7 @@ def tangential_component(c, theta):
     return c_theta
 
 
-def blade_speed_from_triangle(w_theta, c_theta):
+def blade_speed_from_triangle(w_theta: float, c_theta: float) -> float:
     """Blade speed at the mean radius from triangle closure: U = c_theta + w_theta.
 
     Convention: c_theta is positive in the direction of blade motion and
@@ -95,7 +95,7 @@ def blade_speed_from_triangle(w_theta, c_theta):
     return u
 
 
-def flow_coefficient(c_x, u):
+def flow_coefficient(c_x: float, u: float) -> float:
     """Flow coefficient: phi = c_x / U.
 
     Units: c_x [m/s], u [m/s], result [-].
@@ -107,7 +107,7 @@ def flow_coefficient(c_x, u):
     return phi
 
 
-def stage_loading_coefficient(work, u):
+def stage_loading_coefficient(work: float, u: float) -> float:
     """Stage loading coefficient: psi = Euler work / U^2.
 
     Units: work [J/kg], u [m/s], result [-].
@@ -119,7 +119,7 @@ def stage_loading_coefficient(work, u):
     return psi
 
 
-def degree_of_reaction(w_1, w_2, work):
+def degree_of_reaction(w_1: float, w_2: float, work: float) -> float:
     """Degree of reaction.
 
     Reaction = (static enthalpy rise across the rotor) / (stage enthalpy rise).
